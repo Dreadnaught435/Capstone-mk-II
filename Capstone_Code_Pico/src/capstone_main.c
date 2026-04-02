@@ -4,6 +4,7 @@
 
 int main(void)
 {
-    i2c_init();
-    //oled_init();
+    start_i2c();
+    oled_init();
+    test();
 }

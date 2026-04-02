@@ -1,20 +1,59 @@
 #include "capstone_display.h"
 #include <stdio.h>
 #include <string.h>
-#include "../pico/stdlib.h"
-#include "../hardware/i2c.h"
+#include "pico/stdlib.h"
+#include "hardware/i2c.h"
 #include <stdint.h>
 
 #define I2C_PORT i2c0
 #define I2C_SDA 0
 #define I2C_SCL 1
 
+#define OLED_ADDR 0x3C 
+
 #define CHAR_SIZE 6
 
-#define OLED_ADDR 0x3C
+#define SSD1306_HEIGHT             64
+#define SSD1306_WIDTH               128
 
-char message[21];
-uint8_t buffer[6];
+#define SSD1306_SET_MEM_MODE        _u(0x20)
+#define SSD1306_SET_COL_ADDR        _u(0x21)
+#define SSD1306_SET_PAGE_ADDR       _u(0x22)
+#define SSD1306_SET_HORIZ_SCROLL    _u(0x26)
+#define SSD1306_SET_SCROLL          _u(0x2E)
+
+#define SSD1306_SET_DISP_START_LINE _u(0x40)
+
+#define SSD1306_SET_CONTRAST        _u(0x81)
+#define SSD1306_SET_CHARGE_PUMP     _u(0x8D)
+
+#define SSD1306_SET_SEG_REMAP       _u(0xA0)
+#define SSD1306_SET_ENTIRE_ON       _u(0xA4)
+#define SSD1306_SET_ALL_ON          _u(0xA5)
+#define SSD1306_SET_NORM_DISP       _u(0xA6)
+#define SSD1306_SET_INV_DISP        _u(0xA7)
+#define SSD1306_SET_MUX_RATIO       _u(0xA8)
+#define SSD1306_SET_DISP            _u(0xAE)
+#define SSD1306_SET_COM_OUT_DIR     _u(0xC0)
+#define SSD1306_SET_COM_OUT_DIR_FLIP _u(0xC0)
+
+#define SSD1306_SET_DISP_OFFSET     _u(0xD3)
+#define SSD1306_SET_DISP_CLK_DIV    _u(0xD5)
+#define SSD1306_SET_PRECHARGE       _u(0xD9)
+#define SSD1306_SET_COM_PIN_CFG     _u(0xDA)
+#define SSD1306_SET_VCOM_DESEL      _u(0xDB)
+
+#define SSD1306_PAGE_HEIGHT         _u(8)
+#define SSD1306_NUM_PAGES           (SSD1306_HEIGHT / SSD1306_PAGE_HEIGHT)
+#define SSD1306_BUF_LEN             (SSD1306_NUM_PAGES * SSD1306_WIDTH)
+
+#define SSD1306_WRITE_MODE         _u(0xFE)
+#define SSD1306_READ_MODE          _u(0xFF)
+
+
+
+uint8_t message[21];
+uint8_t buffer[64];
 
 const uint8_t ssd1306xled_font6x8 []={
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // space
@@ -86,7 +125,7 @@ void display_message()
         oled_set_cursor(0, cursor_col);
     }
 }
-void i2c_init(void)
+void start_i2c(void)
 {
     stdio_init_all();
 
@@ -96,6 +135,8 @@ void i2c_init(void)
     //configure GPIOs 0 and 1 to be I2C pins
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA);
+    gpio_pull_up(I2C_SCL);
 }
 void oled_send_command(uint8_t cmd)
 {
@@ -106,38 +147,56 @@ void oled_send_command(uint8_t cmd)
 }
 void oled_init(void)
 {
-    oled_send_command(0xAE); // display OFF
-    oled_send_command(0xD5); // Set display clock divide
-    oled_send_command(0x80); // Suggested ratio
-    oled_send_command(0xA8); // Set multiplex
-    oled_send_command(0x1F); // 0x1F = 31 → for 128x32
-    oled_send_command(0xD3); // Display offset
-    oled_send_command(0x00); // 0 offset
-    oled_send_command(0x40); // Set display start line to 0
-    oled_send_command(0x8D); // Charge pump
-    oled_send_command(0x14); // Enable charge pump
-    oled_send_command(0x20); // Memory mode
-    oled_send_command(0x00); // Horizontal addressing mode
-    oled_send_command(0xA1); // Segment remap (mirror horizontally)
-    oled_send_command(0xC8); // COM scan direction (remap vertically)
-    oled_send_command(0xDA); // Set COM pins config
-    oled_send_command(0x02); // *128x32 specific* (NOT 0x12!)
-    oled_send_command(0x81); // Contrast
-    oled_send_command(0x8F);
-    oled_send_command(0xD9); // Pre-charge
-    oled_send_command(0xF1);
-    oled_send_command(0xDB); // VCOM detect
-    oled_send_command(0x40);
-    oled_send_command(0xA4); // Display all on (resume RAM)
-    oled_send_command(0xA6); // Normal display (not inverted)
-    oled_send_command(0x2E); // Deactivate scroll (safety)
-    oled_send_command(0xAF); // Display ON
+    uint8_t cmds[] = {
+        SSD1306_SET_DISP,               // set display off
+        /* memory mapping */
+        SSD1306_SET_MEM_MODE,           // set memory address mode 0 = horizontal, 1 = vertical, 2 = page
+        0x00,                           // horizontal addressing mode
+        /* resolution and layout */
+        SSD1306_SET_DISP_START_LINE,    // set display start line to 0
+        SSD1306_SET_SEG_REMAP | 0x01,   // set segment re-map, column address 127 is mapped to SEG0
+        SSD1306_SET_MUX_RATIO,          // set multiplex ratio
+        SSD1306_HEIGHT - 1,             // Display height - 1
+        SSD1306_SET_COM_OUT_DIR | 0x08, // set COM (common) output scan direction. Scan from bottom up, COM[N-1] to COM0
+        SSD1306_SET_DISP_OFFSET,        // set display offset
+        0x00,                           // no offset
+        SSD1306_SET_COM_PIN_CFG,        // set COM (common) pins hardware configuration. Board specific magic number.
+                                        // 0x02 Works for 128x32, 0x12 Possibly works for 128x64. Other options 0x22, 0x32
+#if ((SSD1306_WIDTH == 128) && (SSD1306_HEIGHT == 32))
+        0x02,
+#elif ((SSD1306_WIDTH == 128) && (SSD1306_HEIGHT == 64))
+        0x12,
+#else
+        0x02,
+#endif
+        /* timing and driving scheme */
+        SSD1306_SET_DISP_CLK_DIV,       // set display clock divide ratio
+        0x80,                           // div ratio of 1, standard freq
+        SSD1306_SET_PRECHARGE,          // set pre-charge period
+        0xF1,                           // Vcc internally generated on our board
+        SSD1306_SET_VCOM_DESEL,         // set VCOMH deselect level
+        0x30,                           // 0.83xVcc
+        /* display */
+        SSD1306_SET_CONTRAST,           // set contrast control
+        0xFF,
+        SSD1306_SET_ENTIRE_ON,          // set entire display on to follow RAM content
+        SSD1306_SET_NORM_DISP,           // set normal (not inverted) display
+        SSD1306_SET_CHARGE_PUMP,        // set charge pump
+        0x14,                           // Vcc internally generated on our board
+        SSD1306_SET_SCROLL | 0x00,      // deactivate horizontal scrolling if set. This is necessary as memory writes will corrupt if scrolling was enabled
+        SSD1306_SET_DISP | 0x01, // turn display on
+    };
+
+    for(int i=0;i<sizeof(cmds)/sizeof(cmds[1]);i++)
+    {
+        oled_send_command(cmds[i]);
+    }
 }
 void oled_send_data(uint8_t *data, uint8_t len)
 {
     uint8_t buffer[len];
     buffer[0] = 0x40; //control byte
-    for (uint8_t i = 0; i < len; i++) buffer[i] = data[i];
+    for (uint8_t i = 1; i < len; i++) buffer[i] = data[i];
     i2c_write_blocking(I2C_PORT,OLED_ADDR,buffer,len,false);
 }
 void oled_set_cursor(uint8_t page, uint8_t column)
@@ -152,7 +211,7 @@ void oled_write_char6(const uint8_t data[6])
 }
 void oled_clear(void)
 {
-    for (uint8_t page = 0; page < 4; page++) { // 128x32 = 4 pages
+    for (uint8_t page = 0; page < 8; page++) { // 128x32 = 4 pages
         oled_set_cursor(page, 0);
         for (uint8_t i = 0; i < 128; i++) {
             uint8_t zero = 0;
@@ -163,5 +222,8 @@ void oled_clear(void)
 }
 void test()
 {
-
+    strcpy(message, "PENIS BALLS");
+	display_message();
+    oled_clear();
+	return;
 }

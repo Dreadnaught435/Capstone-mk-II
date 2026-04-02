@@ -8,7 +8,7 @@ void oled_send_data(uint8_t *data, uint8_t len);
 void test();
 void oled_send_command(uint8_t cmd);
 void oled_set_cursor(uint8_t page, uint8_t column);
-void i2c_init(void);
+void start_i2c(void);
 void oled_clear(void);
 
 #endif
