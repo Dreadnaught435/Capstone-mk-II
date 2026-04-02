@@ -11,8 +11,6 @@ The file was technically created earlier, but contained nothing but a single pri
 #include "capstone_morse.h"
 #include "capstone_input.h"
 #include "wrapper.h"
-#include <avr/io.h>
-#include <util/delay.h>
 
 #define CHAR_SIZE 6
 #define OLED_ADDR 0x3C
