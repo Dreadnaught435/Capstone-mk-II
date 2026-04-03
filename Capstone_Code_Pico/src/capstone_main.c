@@ -42,25 +42,26 @@ int main() {
     memset(buf, 0, SSD1306_BUF_LEN);
     render(buf, &frame_area);
 
-    char *text[] = {"penis","sinep"};
+    // char *text[] = {"penis","sinep"};
 
-    int y = 0;
-    for (uint i = 0;i < count_of(text); i++) {
-        WriteString(buf, 5, y, text[i]);
-        y+=8;
-    }
-    render(buf, &frame_area);
-    sleep_ms(500);
-    memset(buf, 0, SSD1306_BUF_LEN);
-    render(buf, &frame_area);
+    // int y = 0;
+    // for (uint i = 0;i < count_of(text); i++) {
+    //     WriteString(buf, 5, y, text[i]);
+    //     y+=8;
+    // }
+    // render(buf, &frame_area);
+    // sleep_ms(500);
+    // memset(buf, 0, SSD1306_BUF_LEN);
+    // render(buf, &frame_area);
 
     //strcpy(test,"fart");
-    test[0] = 'a';
+    // test[0] = 'a';
+    // test[1] = 'g';
     while(1)
     {
-        y=0;
+        int y=0;
         for (uint i = 0;i < count_of(test); i++) {
-            WriteChar(buf, 5, y, test[i]);
+            WriteChar(buf, y, 5, test[i]);
             y+=8;
         }
         render(buf, &frame_area);

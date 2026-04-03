@@ -28,5 +28,4 @@ void init_interrupts()
     gpio_set_irq_enabled_with_callback(BUTTON_GPIO,GPIO_IRQ_EDGE_FALL|GPIO_IRQ_EDGE_RISE,true,&gpio_callback);
     //GPIO 19 is send button, only needs falling interrupt in order to handle send
     gpio_set_irq_enabled_with_callback(SEND_GPIO,GPIO_IRQ_EDGE_FALL,true,&gpio_callback);
-    test[5] = 'p';
 }
