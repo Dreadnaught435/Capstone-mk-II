@@ -11,13 +11,21 @@
 
 char test[10];
 
+//debouncing call
+absolute_time_t prev = {0};
+
 void gpio_callback(uint gpio, uint32_t events)
 {
+    //If multiple interrupts occur within ~25ms, then ignore them
+    absolute_time_t cur = get_absolute_time();
+    if(absolute_time_diff_us(prev,cur) < 20000) return;
+    prev = cur;
+
     if(gpio==BUTTON_GPIO)
     {
         test[1] = 'b';
     }
-    else
+    else if(gpio==SEND_GPIO)
     {
         test[2] = 'c';
     }
