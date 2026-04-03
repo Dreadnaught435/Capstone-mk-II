@@ -60,6 +60,8 @@ target_include_directories(Capstone_Code_Pico PRIVATE
 # Add any user requested libraries
 target_link_libraries(Capstone_Code_Pico 
         hardware_i2c
+        hardware_gpio
+        hardware_uart
         )
 
 pico_add_extra_outputs(Capstone_Code_Pico)
