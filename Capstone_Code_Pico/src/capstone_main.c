@@ -11,17 +11,14 @@
 #include "ssd1306_font.h"
 
 int main() {
-    stdio_init_all();
 
-    // I2C is "open drain", pull ups to keep signal high when no data is being
-    // sent
-    i2c_init(i2c_default, SSD1306_I2C_CLK * 1000);
+    //inits
+    stdio_init_all();
+    i2c_init(i2c_default, SSD1306_I2C_CLK * 1000); //i2c
     gpio_set_function(0, GPIO_FUNC_I2C);
     gpio_set_function(1, GPIO_FUNC_I2C);
     gpio_pull_up(0);
     gpio_pull_up(1);
-
-    //inits
     SSD1306_init(); //display
     gpio_pull_up(18);
     gpio_pull_up(19);
@@ -37,7 +34,7 @@ int main() {
 
     calc_render_area_buflen(&frame_area);
 
-    // zero the entire display
+    // clear display
     uint8_t buf[SSD1306_BUF_LEN];
     memset(buf, 0, SSD1306_BUF_LEN);
     render(buf, &frame_area);
