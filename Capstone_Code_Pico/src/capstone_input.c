@@ -18,6 +18,8 @@ int state = 0;
 
 //debouncing call
 absolute_time_t prev = {0};
+absolute_time_t start_time;
+absolute_time_t end_time;
 
 void gpio_callback(uint gpio, uint32_t events)
 {
@@ -31,16 +33,24 @@ void gpio_callback(uint gpio, uint32_t events)
         //input button pressed
         if(events & GPIO_IRQ_EDGE_FALL)
         {
-            absolute_time_t start_time = get_absolute_time();
+            //get time of button press
+            start_time = get_absolute_time();
             state = 1;
+            //interpret what the duration of the last unpress means
             interpret_buttons(state);
+            //reset end_time for when button is unpressed
+            end_time = 0;
         }
         //input button released
         if(events & GPIO_IRQ_EDGE_RISE)
         {
-            absolute_time_t end_time = get_absolute_time();
+            //get time of button unpress
+            end_time = get_absolute_time();
             state = 2;
+            //interpret what the duration of the last press means
             interpret_buttons(state);
+            //reset start_time for when button is pressed
+            start_time = 0;
         }
     }
     else if(gpio==SEND_GPIO)
@@ -48,9 +58,11 @@ void gpio_callback(uint gpio, uint32_t events)
         //send button pressed
         if(events & GPIO_IRQ_EDGE_FALL)
         {
-            absolute_time_t duration = get_absolute_time();
             state = 3;
             interpret_buttons(state);
+            //reset timestamps for next message
+            start_time = 0;
+            end_time = 0;
         }
     }
 }
