@@ -13,8 +13,8 @@
 char message[10];
 char letter[4];
 
-int letter_index = 0;
-int message_index = 0;
+int letter_index;
+int message_index;
 
 int64_t press_length;
 int64_t unpress_length;
@@ -78,21 +78,19 @@ void interpret_buttons(int state)
             //0.5s leniency, dot is 1s, dash is 3s
             if((DOT_TIME - LENIENCY < press_length) && (press_length < DOT_TIME + LENIENCY))
             {
-                message[0] = 'a';
+                letter[letter_index] = '.';
+                letter_index++;
             }
             else if((DASH_TIME - LENIENCY < press_length) && (press_length < DASH_TIME + LENIENCY))
             {
-                message[0] = 'b';
-            }
-            else
-            {
-                message[0] = 'd';
+                letter[letter_index] = '-';
+                letter_index++;
             }
             state = 0;
             break;
         case 3: //send button just pressed
             //transmit, clear letter/message
-            message[0] = 'c';
+            letter[0] = 'c';
             state = 0;
             break;
         default: //holding pattern for startup/after message is sent, waiting for input

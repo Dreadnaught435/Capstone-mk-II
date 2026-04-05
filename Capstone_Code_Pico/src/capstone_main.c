@@ -58,8 +58,8 @@ int main() {
     while(1)
     {
         int y=0;
-        for (uint i = 0;i < count_of(message); i++) {
-            WriteChar(buf, y, 5, message[i]);
+        for (uint i = 0;i < count_of(letter); i++) {
+            WriteChar(buf, y, 5, letter[i]);
             y+=8;
         }
         render(buf, &frame_area);
