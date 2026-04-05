@@ -6,6 +6,4 @@
 void init_interrupts();
 void gpio_callback(uint gpio, uint32_t events);
 
-extern char test[10];
-
 #endif

@@ -4,6 +4,7 @@
 
 #include "capstone_display.h"
 #include "capstone_input.h"
+#include "capstone_morse.h"
 
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
@@ -57,8 +58,8 @@ int main() {
     while(1)
     {
         int y=0;
-        for (uint i = 0;i < count_of(test); i++) {
-            WriteChar(buf, y, 5, test[i]);
+        for (uint i = 0;i < count_of(message); i++) {
+            WriteChar(buf, y, 5, message[i]);
             y+=8;
         }
         render(buf, &frame_area);

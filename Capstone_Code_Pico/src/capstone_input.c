@@ -13,13 +13,13 @@
 
 #define DEBOUNCE_US 20000
 
-char test[10];
 int state = 0;
 
 //debouncing call
 absolute_time_t prev = {0};
-absolute_time_t start_time;
-absolute_time_t end_time;
+//duration tracking for morse decoding
+volatile absolute_time_t start_time;
+volatile absolute_time_t end_time;
 
 void gpio_callback(uint gpio, uint32_t events)
 {
@@ -39,7 +39,7 @@ void gpio_callback(uint gpio, uint32_t events)
             //interpret what the duration of the last unpress means
             interpret_buttons(state);
             //reset end_time for when button is unpressed
-            end_time = 0;
+            //end_time = nil_time;
         }
         //input button released
         if(events & GPIO_IRQ_EDGE_RISE)
@@ -50,7 +50,7 @@ void gpio_callback(uint gpio, uint32_t events)
             //interpret what the duration of the last press means
             interpret_buttons(state);
             //reset start_time for when button is pressed
-            start_time = 0;
+            //start_time = nil_time;
         }
     }
     else if(gpio==SEND_GPIO)
