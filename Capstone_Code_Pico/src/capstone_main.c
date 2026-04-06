@@ -42,6 +42,7 @@ int main() {
 
     while(1)
     {
+        //display letter/messag as you type to ensure that the user is inputting what they want to
         int y=0;
         int z=0;
         for (uint i = 0;i < count_of(letter); i++) {
@@ -54,6 +55,5 @@ int main() {
             z+=8;
         }
         render(buf, &frame_area);
-        sleep_ms(500);
     }
 }
