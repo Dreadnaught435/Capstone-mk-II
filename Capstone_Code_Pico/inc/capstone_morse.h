@@ -13,5 +13,6 @@ extern char message[10];
 extern char letter[4];
 
 void interpret_buttons(int st);
+int decode(char *let, size_t);
 
 #endif

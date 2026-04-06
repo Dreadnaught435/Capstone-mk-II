@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "capstone_morse.h"
 #include "capstone_input.h"
@@ -13,8 +14,8 @@
 char message[10];
 char letter[4];
 
-int letter_index;
-int message_index;
+int letter_index=0;
+int message_index=0;
 
 int64_t press_length;
 int64_t unpress_length;
@@ -64,12 +65,13 @@ void interpret_buttons(int state)
             //if same letter, then nothing needs to be done
             if((DOT_TIME*3 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*3 + LENIENCY))
             {
-                //append letter to message, clear letter
+                message[message_index] = decode(letter,(sizeof(letter)/sizeof(letter[0])));
+                message_index++;
             } 
-            else if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
+            /*else if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
             {
                 //clear letter, append space to message
-            } 
+            } */
             state = 0;
             break;
         case 2: //input button just released, handle last press
@@ -96,5 +98,12 @@ void interpret_buttons(int state)
         default: //holding pattern for startup/after message is sent, waiting for input
             while(state==0);
             break;
+    }
+}
+int decode(char *let, size_t let_len)
+{
+    for(size_t i=0;i<27;i++) //iterate through all 26 letters in morse list
+    {
+        if(!strncmp(let,morse_table[i],let_len)) return alphabet[i]; //if strings match, return
     }
 }

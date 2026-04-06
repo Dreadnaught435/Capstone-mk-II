@@ -437,16 +437,13 @@ int GetFontIndex(uint8_t ch) {
     if (ch >= 'A' && ch <='Z') {
         return  ch - 'A' + 1;
     }
-    else if (ch >= '0' && ch <='9') {
-        return  ch - '0' + 27;
-    }
     else if (ch == '.')
     {
-        return 37;
+        return 27;
     }
     else if (ch == '-')
     {
-        return 38;
+        return 28;
     }
     else return  0; // Not got that char so space.
 }
