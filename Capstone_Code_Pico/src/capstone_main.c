@@ -5,8 +5,10 @@
 #include "capstone_display.h"
 #include "capstone_input.h"
 #include "capstone_morse.h"
+#include "capstone_uart.h"
 
 #include "pico/stdlib.h"
+#include "hardware/uart.h"
 #include "hardware/i2c.h"
 #include "raspberry26x32.h"
 #include "ssd1306_font.h"
@@ -24,6 +26,7 @@ int main() {
     gpio_pull_up(18);
     gpio_pull_up(19);
     init_interrupts(); //interrupts
+    initialize_uart(); //uart
 
     // Initialize render area for entire frame (SSD1306_WIDTH pixels by SSD1306_NUM_PAGES pages), for clearing display
     struct render_area frame_area = {
@@ -42,17 +45,24 @@ int main() {
 
     while(1)
     {
-        //display letter/messag as you type to ensure that the user is inputting what they want to
+        //display letter/message as you type to ensure that the user is inputting what they want to
+        int g=0;
         int y=0;
         int z=0;
-        for (uint i = 0;i < count_of(letter); i++) {
-            WriteChar(buf, y, 5,letter[i]);
+        for (uint i = 0;i < count_of(letter); i++)
+        {
+            WriteChar(buf,y,5,letter[i]);
             y+=8;
         }
         for (uint i = 0;i < count_of(message);i++)
         {
             WriteChar(buf,z,10,message[i]);
             z+=8;
+        }
+        for (uint i = 0;i < count_of(rec);i++)
+        {
+            WriteChar(buf,g,20,rec[i]);
+            g+=8;
         }
         render(buf, &frame_area);
     }

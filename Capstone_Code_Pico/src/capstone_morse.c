@@ -4,6 +4,7 @@
 
 #include "capstone_morse.h"
 #include "capstone_input.h"
+#include "capstone_uart.h"
 
 #include "pico/time.h"
 
@@ -82,7 +83,6 @@ void interpret_buttons(int state)
                 memset(letter,0,sizeof(letter));
                 letter_index = 0;
             }
-            state = 0;
             break;
         case 2: //input button just released, handle last press
             //check length of last press
@@ -100,21 +100,17 @@ void interpret_buttons(int state)
                 letter[letter_index] = '-';
                 letter_index++;
             }
-            state = 0;
             break;
         case 3: //send button just pressed
             //append last letter to message
             message[message_index] = decode(letter,(sizeof(letter)/sizeof(letter[0])));
             //transmit
+            uart_putc(UART_ID,'c');
             //reset letter/message
             memset(message,0,sizeof(message));
             message_index = 0;
             memset(letter,0,sizeof(letter));
             letter_index = 0;
-            state = 0;
-            break;
-        default: //holding pattern for startup/after message is sent, waiting for input
-            while(state==0);
             break;
     }
 }
