@@ -17,19 +17,29 @@ void initialize_uart()
     gpio_set_function(UART_RX, GPIO_FUNC_UART);
     uart_init(UART_ID, BAUD_RATE);
 
-    uart_set_fifo_enabled(UART_ID, false);
-    //set up rx interrupt handler
+    uart_set_fifo_enabled(UART_ID, true);
+    // //set up rx interrupt handler
     irq_set_exclusive_handler(UART0_IRQ, on_uart_rx);
     irq_set_enabled(UART0_IRQ, true);
     uart_set_irq_enables(UART_ID, true, false);
 }
 void on_uart_rx()
 {
+    char c;
     uint8_t rec_index = 0;
     memset(rec,0,sizeof(rec));
+    // while(uart_is_readable(UART_ID))
+    // {
+    //     c = uart_getc(UART_ID);
+    //     printf("idx %d\n",rec_index);
+    //     if(rec_index < 9) rec[rec_index] = c;
+    //     rec_index++;
+    // }
     while(uart_is_readable(UART_ID))
     {
-        rec[rec_index] = uart_getc(UART_ID);
+        c = uart_getc(UART_ID);
+        printf("char %c\n",c);
+        rec[rec_index] = c;
         rec_index++;
     }
 }

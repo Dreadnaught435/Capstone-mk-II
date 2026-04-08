@@ -68,21 +68,24 @@ void interpret_buttons(int state)
             if((DOT_TIME*3 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*3 + LENIENCY))
             {
                 //append to message
-                message[message_index] = decode(letter,(sizeof(letter)/sizeof(letter[0])));
-                message_index++;
+                if (message_index >= 10) break;
+                char let = decode(letter,(sizeof(letter)/sizeof(letter[0])));
+                message[message_index] = let;
+                if(let) message_index++;
                 //reset letter
                 memset(letter,0,sizeof(letter));
                 letter_index = 0;
             } 
-            else if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
+            /*else if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
             {
                 //append space to message
+                if (message_index >= 10) break;
                 message[message_index] = ' ';
                 message_index++;
                 //reset letter
                 memset(letter,0,sizeof(letter));
                 letter_index = 0;
-            }
+            }*/
             break;
         case 2: //input button just released, handle last press
             //check length of last press
@@ -94,7 +97,7 @@ void interpret_buttons(int state)
                 letter[letter_index] = '.';
                 letter_index++;
             }
-            else if((DASH_TIME - LENIENCY < press_length) && (press_length < DASH_TIME + LENIENCY))
+            else if((DASH_TIME - (LENIENCY*2) < press_length) && (press_length < DASH_TIME + (LENIENCY*2)))
             {
                 //add dash to letter
                 letter[letter_index] = '-';
@@ -104,8 +107,11 @@ void interpret_buttons(int state)
         case 3: //send button just pressed
             //append last letter to message
             message[message_index] = decode(letter,(sizeof(letter)/sizeof(letter[0])));
+            message_index++;
+            //append null terminator
+            message[message_index] = '\n'; 
             //transmit
-            uart_putc(UART_ID,'c');
+            uart_puts(UART_ID,message);
             //reset letter/message
             memset(message,0,sizeof(message));
             message_index = 0;
@@ -120,4 +126,5 @@ int decode(char *let, size_t let_len)
     {
         if(!strncmp(let,morse_table[i],let_len)) return alphabet[i]; //if strings match, return
     }
+    return 0;
 }

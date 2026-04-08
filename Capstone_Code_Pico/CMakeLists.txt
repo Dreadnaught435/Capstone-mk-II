@@ -45,8 +45,8 @@ pico_set_program_name(Capstone_Code_Pico "Capstone_Code_Pico")
 pico_set_program_version(Capstone_Code_Pico "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(Capstone_Code_Pico 1)
-pico_enable_stdio_usb(Capstone_Code_Pico 0)
+pico_enable_stdio_uart(Capstone_Code_Pico 0)
+pico_enable_stdio_usb(Capstone_Code_Pico 1)
 
 # Add the standard library to the build
 target_link_libraries(Capstone_Code_Pico

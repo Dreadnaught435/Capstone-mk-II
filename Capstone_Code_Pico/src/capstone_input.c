@@ -57,11 +57,6 @@ volatile absolute_time_t end_time;
 
 void gpio_callback(uint gpio, uint32_t events)
 {
-    // int rc = pico_led_init();
-    // hard_assert(rc == PICO_OK);
-    // pico_set_led(true);
-    // sleep_ms(LED_DELAY_MS);
-    // pico_set_led(false);
     //If multiple interrupts occur within ~25ms, then ignore them
     absolute_time_t cur = get_absolute_time();
     if(absolute_time_diff_us(prev,cur) < DEBOUNCE_US) return;
@@ -72,7 +67,11 @@ void gpio_callback(uint gpio, uint32_t events)
         //input button pressed
         if(events & GPIO_IRQ_EDGE_FALL)
         {
-            letter[0] = 'g';
+            // int rc = pico_led_init();
+            // hard_assert(rc == PICO_OK);
+            // pico_set_led(true);
+            // sleep_ms(LED_DELAY_MS);
+            // pico_set_led(false);
             //get time of button press
             start_time = get_absolute_time();
             state = 1;
