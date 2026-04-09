@@ -62,21 +62,8 @@ void interpret_buttons(int state)
         case 1: //input button just pressed, handle last unpress
             //check length of last unpress
             unpress_length = absolute_time_diff_us(end_time,start_time);
-            //0.5s leniency, morse in same letter separated by 1 dot, letters by 3 dots, words by 7 dots
-            //if same letter, then nothing needs to be done
-            //letter done
-            if((DOT_TIME*3 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*3 + LENIENCY))
-            {
-                //append to message
-                if (message_index >= 10) break;
-                char let = decode(letter,(sizeof(letter)/sizeof(letter[0])));
-                message[message_index] = let;
-                if(let) message_index++;
-                //reset letter
-                memset(letter,0,sizeof(letter));
-                letter_index = 0;
-            } 
-            /*else if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
+            //if 7 seconds have passed, append a space
+            /*if((DOT_TIME*7 - LENIENCY < unpress_length) && (unpress_length < DOT_TIME*7 + LENIENCY))
             {
                 //append space to message
                 if (message_index >= 10) break;
@@ -105,18 +92,30 @@ void interpret_buttons(int state)
             }
             break;
         case 3: //send button just pressed
-            //append last letter to message
-            message[message_index] = decode(letter,(sizeof(letter)/sizeof(letter[0])));
-            message_index++;
-            //append null terminator
-            message[message_index] = '\n'; 
-            //transmit
+            message[message_index] = '\n';
+            printf("%c\n",message[message_index]);
             uart_puts(UART_ID,message);
             //reset letter/message
             memset(message,0,sizeof(message));
             message_index = 0;
             memset(letter,0,sizeof(letter));
             letter_index = 0;
+            break;
+        case 4:
+            //enter letter in message
+            if (message_index >= 10) break;
+            char let = decode(letter,(sizeof(letter)/sizeof(letter[0])));
+            if  (!let) break;
+            message[message_index] = let;
+            message_index++;
+            //reset letter
+            memset(letter,0,sizeof(letter));
+            letter_index = 0;
+            break;
+        case 5:
+            //delete most recent entry to letter
+            letter_index--;
+            letter[letter_index] = '\n';
             break;
     }
 }

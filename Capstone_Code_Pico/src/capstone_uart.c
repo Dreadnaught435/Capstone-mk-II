@@ -26,20 +26,16 @@ void initialize_uart()
 void on_uart_rx()
 {
     char c;
-    uint8_t rec_index = 0;
-    memset(rec,0,sizeof(rec));
-    // while(uart_is_readable(UART_ID))
-    // {
-    //     c = uart_getc(UART_ID);
-    //     printf("idx %d\n",rec_index);
-    //     if(rec_index < 9) rec[rec_index] = c;
-    //     rec_index++;
-    // }
+    static uint8_t rec_index = 0;
+    if (rec_index == 0) memset(rec,0,sizeof(rec));
     while(uart_is_readable(UART_ID))
     {
         c = uart_getc(UART_ID);
-        printf("char %c\n",c);
         rec[rec_index] = c;
         rec_index++;
+        if(c == '\n')
+        {
+            rec_index = 0;
+        }
     }
 }
